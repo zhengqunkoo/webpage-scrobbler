@@ -1,0 +1,6 @@
+[submodule "CryptoJS"]
+	path = CryptoJS
+	url = https://github.com/sytelus/CryptoJS.git
+[submodule "js/CryptoJS"]
+	path = js/CryptoJS
+	url = https://github.com/sytelus/CryptoJS.git

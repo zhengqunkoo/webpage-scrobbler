@@ -1,0 +1,42 @@
+{
+  "background": {
+    "scripts": [
+      "/js/background.js"
+    ]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{c05986d4-590c-41bb-a754-66d411ecb587}"
+    }
+  },
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": "icons/icon.svg"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "/js/webpage-scrobbler.js",
+        "/js/CryptoJS/rollups/md5.js"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
+    }
+  ],
+  "description": "Scrobbles information from a webpage.",
+  "icons": {
+    "64": "icons/icon.svg"
+  },
+  "manifest_version": 2,
+  "name": "webpage-scrobbler",
+  "options_ui": {
+    "page": "/html/options.html"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "https://ws.audioscrobbler.com/2.0/*"
+  ],
+  "version": "0.1.0"
+}
