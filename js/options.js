@@ -17,30 +17,21 @@ const authenticate = submit => {
     })
 
     .then(async text => {
-      text = await text
-      console.log(text)
+      const [errorCode, sessionKey, _] = constants.validateXmlDoc(await text)
 
-      const xmlDoc = new DOMParser().parseFromString(text, 'text/xml')
+      if (errorCode === undefined) {
+        console.log(sessionKey)
+        browser.storage.sync.set({'sessionKey': sessionKey})
+          .then(window.close)
+          .catch(console.error)
 
-      const lfm = xmlDoc.evaluate('/lfm', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
-      if (lfm.getAttribute('status') !== 'ok') {
-        const error = xmlDoc.evaluate('/lfm/error', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
-        console.log(error)
-        const errorCode = error.getAttribute('code')
-        if (errorCode === '4') {
-          document.getElementById('response').innerHTML = 'Invalid username or password.'
-          return
-        } else {
-          document.getElementById('response').innerHTML = 'Unknown error, please see browser console.'
-          return
-        }
+      } else if (errorCode === '4') {
+        document.getElementById('response').innerHTML = 'Invalid username or password.'
+        return
+      } else {
+        document.getElementById('response').innerHTML = 'Unknown error, please see browser console.'
+        return
       }
-
-      const sessionKey = xmlDoc.evaluate('/lfm/session/key', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue
-      console.log(sessionKey)
-      browser.storage.sync.set({'sessionKey': sessionKey})
-        .then(window.close)
-        .catch(console.error)
 
     })
 

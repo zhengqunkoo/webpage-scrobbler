@@ -24,6 +24,12 @@ browser.browserAction.onClicked.addListener(tab => {
     .catch(console.error)
 })
 
+browser.runtime.onMessage.addListener(path => {
+  browser.browserAction.setIcon({path: path})
+
+  window.setTimeout(browser.browserAction.setIcon, 1000, {path: 'icons/icon.svg'})
+})
+
 browser.runtime.onInstalled.addListener(async ({ reason, temporary }) => {
   if (temporary) {
     return

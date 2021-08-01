@@ -12,6 +12,24 @@ let hostToModifiers = {
   },
 }
 
+const postApiThenSetIcon = params => {
+  postApi(params)
+
+    .then(async text => {
+      const [errorCode, _, ignoredMessage] = validateXmlDoc(await text)
+
+      if (errorCode === undefined && ignoredMessage === null) {
+        browser.runtime.sendMessage('/icons/icon-ok.svg')
+      } else {
+        browser.runtime.sendMessage('/icons/icon-error.svg')
+        console.error(params['method'] + ' failed')
+      }
+
+    })
+
+    .catch(console.error)
+}
+
 const init = () => {
   browser.runtime.onMessage.addListener(host => {
 
@@ -43,14 +61,10 @@ const init = () => {
           }
           console.log(params['artist'], '/', params['track'], '/', params['album'])
 
-          postApi(params)
-            .then(console.log)
-            .catch(console.error)
+          postApiThenSetIcon(params)
 
           params['method'] = 'track.updateNowPlaying'
-          postApi(params)
-            .then(console.log)
-            .catch(console.error)
+          postApiThenSetIcon(params)
 
         }
       })
@@ -89,6 +103,39 @@ const postApi = params => {
     })
 
     .catch(console.error)
+
+}
+
+/* Parse text as xmlDoc, then validate it.
+ *
+ * Return [errorCode, sessionKey, ignoredMessage].
+ * errorCode is undefined if xmlDoc has no error.
+ * sessionKey is null if xmlDoc has an error, or if xmlDoc has no sessionKey.
+ * ignoredMessage is null if xmlDoc has an error, or if xmlDoc has no ignoredMessage.
+ */
+const validateXmlDoc = text => {
+  console.log(text)
+  const xmlDoc = new DOMParser().parseFromString(text, 'text/xml')
+  const lfm = xmlDoc.evaluate('/lfm', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+
+  if (lfm.getAttribute('status') !== 'ok') {
+    const error = xmlDoc.evaluate('/lfm/error', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+    console.log(error)
+
+    return [
+      error.getAttribute('code'),
+      null,
+      null
+    ]
+
+  } else {
+
+    return [
+      undefined,
+      xmlDoc.evaluate('/lfm/session/key', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue,
+      xmlDoc.evaluate('/lfm//ignoredMessage', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue
+    ]
+  }
 
 }
 
