@@ -16,13 +16,13 @@ const postApiThenSetIcon = params => {
   postApi(params)
 
     .then(async text => {
-      const [errorCode, _, ignoredMessage] = validateXmlDoc(await text)
+      const [errorCode, _, ignoredCode] = validateXmlDoc(await text)
 
-      if (errorCode === undefined && ignoredMessage === null) {
+      if (errorCode === undefined && ignoredCode === "0") {
         browser.runtime.sendMessage('/icons/icon-ok.svg')
       } else {
         browser.runtime.sendMessage('/icons/icon-error.svg')
-        console.error(params['method'] + ' failed')
+        console.error(params['method'] + ' failed: ignoredCode ' + ignoredCode)
       }
 
     })
@@ -108,10 +108,10 @@ const postApi = params => {
 
 /* Parse text as xmlDoc, then validate it.
  *
- * Return [errorCode, sessionKey, ignoredMessage].
+ * Return [errorCode, sessionKey, ignoredCode].
  * errorCode is undefined if xmlDoc has no error.
  * sessionKey is null if xmlDoc has an error, or if xmlDoc has no sessionKey.
- * ignoredMessage is null if xmlDoc has an error, or if xmlDoc has no ignoredMessage.
+ * ignoredCode is null if xmlDoc has an error. If ignoredCode is "0", then the request is not ignored.
  */
 const validateXmlDoc = text => {
   console.log(text)
@@ -133,7 +133,7 @@ const validateXmlDoc = text => {
     return [
       undefined,
       xmlDoc.evaluate('/lfm/session/key', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue,
-      xmlDoc.evaluate('/lfm//ignoredMessage', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue
+      xmlDoc.evaluate('/lfm//ignoredMessage', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.getAttribute('code')
     ]
   }
 

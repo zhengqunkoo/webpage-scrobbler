@@ -32,19 +32,18 @@ const postApi = params => {
 
 /* Parse text as xmlDoc, then validate it.
  *
- * Return [errorCode, sessionKey, ignoredMessage].
+ * Return [errorCode, sessionKey, ignoredCode].
  * errorCode is undefined if xmlDoc has no error.
  * sessionKey is null if xmlDoc has an error, or if xmlDoc has no sessionKey.
- * ignoredMessage is null if xmlDoc has an error, or if xmlDoc has no ignoredMessage.
+ * ignoredCode is null if xmlDoc has an error. If ignoredCode is "0", then the request is not ignored.
  */
 const validateXmlDoc = text => {
-  console.log(text)
   const xmlDoc = new DOMParser().parseFromString(text, 'text/xml')
   const lfm = xmlDoc.evaluate('/lfm', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
 
   if (lfm.getAttribute('status') !== 'ok') {
     const error = xmlDoc.evaluate('/lfm/error', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
-    console.log(error)
+    console.error(error)
 
     return [
       error.getAttribute('code'),
@@ -57,7 +56,7 @@ const validateXmlDoc = text => {
     return [
       undefined,
       xmlDoc.evaluate('/lfm/session/key', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue,
-      xmlDoc.evaluate('/lfm//ignoredMessage', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue
+      xmlDoc.evaluate('//lfm//ignoredMessage/@code', xmlDoc, null, XPathResult.STRING_TYPE, null).stringValue
     ]
   }
 
