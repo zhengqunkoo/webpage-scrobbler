@@ -1,47 +1,76 @@
-import * as constants from '/js/constants.js'
+const heads = [
+  'host',
+  'track XPath',
+  'artist XPath',
+  'album XPath'
+]
 
-const authenticate = submit => {
-  submit.preventDefault()
-  const username = document.getElementById('username').value
-  const password = document.getElementById('password').value
-  if (username === '' || password === '') {
-    document.getElementById('response').innerHTML = 'Please fill in your username and password.'
-    return
+const tbodyInsertRow = (tbody, e) => { // e: [String: [String]]
+  const row = tbody.insertRow()
+  for (const value of [e[0]].concat(e[1]).values()) {
+    const input = document.createElement('input')
+    input.value = value
+    input.setAttribute('type', 'text')
+    input.addEventListener('focus', input.select)
+    input.addEventListener('keyup', setSettings)
+    row.insertCell().appendChild(input)
+  }
+}
+
+const setSettings = () => {
+  let data = {}
+  const rows = document.getElementById('table').tBodies[0].rows
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    const values = []
+    for (let j = 1; j < row.children.length; j++) {
+      values.push(row.children[j].firstChild.value)
+    }
+    data[row.children[0].firstChild.value] = values
+  }
+  console.log(data)
+  browser.storage.sync.clear()
+  browser.storage.sync.set(data)
+}
+
+const getSettings = (data) => {
+  if (data !== undefined) {
+    delete data['sessionKey'] // delete sessionKey in local data, this is ok because we do not sync.set
   }
 
-  constants.postApi({
-      method: 'auth.getMobileSession',
-      username: username,
-      password: password,
-      api_key: constants.lastfmApiKey,
-    })
-
-    .then(async text => {
-      const [errorCode, sessionKey, _] = constants.validateXmlDoc(await text)
-
-      if (errorCode === undefined) {
-        console.log(sessionKey)
-        browser.storage.sync.set({'sessionKey': sessionKey})
-          .then(window.close)
-          .catch(console.error)
-
-      } else if (errorCode === '4') {
-        document.getElementById('response').innerHTML = 'Invalid username or password.'
-        return
-      } else {
-        document.getElementById('response').innerHTML = 'Unknown error, please see browser console.'
-        return
-      }
-
-    })
-
-    .catch(console.error)
+  const table = document.getElementById('table')
+  const tbody = table.createTBody()
+  Object.entries(data).map(e => tbodyInsertRow(tbody, e))
+  const oldTbody = table.tBodies[0]
+  table.replaceChild(tbody, oldTbody)
 }
 
 const init = () => {
-  document.getElementById('username').focus()
 
-  document.querySelector('form').addEventListener('submit', authenticate)
+  const table = document.getElementById('table')
+  const thead = table.createTHead()
+  table.createTBody()
+
+  const headerRow = thead.insertRow()
+  for (let j = 0; j < heads.length; j++) {
+    const head = heads[j]
+    const th = document.createElement('th')
+    th.innerText = head
+    headerRow.appendChild(th)
+  }
+
+  browser.storage.sync.get()
+    .then(getSettings)
+    .catch(console.error)
+
+  document.getElementById('tbodyInsertRow').addEventListener(
+    'click',
+    () => {
+      const tbody = document.getElementById('table').tBodies[0]
+      tbodyInsertRow(tbody, ['', ['','','']])
+      tbody.rows[tbody.rows.length - 1].firstChild.firstChild.focus()
+    }
+  )
 
   document.getElementById('help').addEventListener(
     'click',

@@ -1,33 +1,23 @@
-let hostToXpaths = {
-  'www.midomi.com': {
-    track: '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[1]',
-    artist: '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[2]/span',
-    album: '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[3]/span',
-  },
-}
-
 let hostToModifiers = {
   'www.midomi.com': {
     album: s => s.split(' • ')[0],
   },
 }
 
-const postApiThenSetIcon = params => {
-  postApi(params)
-
+const postApiThenValidateXml = params => {
+  return postApi(params)
     .then(async text => {
       const [errorCode, _, ignoredCode] = validateXmlDoc(await text)
-
-      if (errorCode === undefined && ignoredCode === "0") {
-        browser.runtime.sendMessage('/icons/icon-ok.svg')
+      if (errorCode !== undefined) {
+        console.error(text)
+        throw params['method'] + ' failed: errorCode ' + errorCode // browser.runtime.sendMessage('/icons/icon-error.svg')
       } else {
-        browser.runtime.sendMessage('/icons/icon-error.svg')
-        console.error(params['method'] + ' failed: ignoredCode ' + ignoredCode)
+        if (ignoredCode !== "0") {
+          console.error(text)
+          throw params['method'] + ' failed: ignoredCode ' + ignoredCode // browser.runtime.sendMessage('/icons/icon-error.svg')
+        }
       }
-
     })
-
-    .catch(console.error)
 }
 
 const init = () => {
@@ -35,43 +25,55 @@ const init = () => {
 
     browser.storage.sync.get()
 
-      .then(data => {
-        if (!(data.hasOwnProperty('sessionKey'))) {
-          throw "data.hasOwnProperty('sessionKey') is false"
+      .then(async data => {
+        data = await data
 
-        } else {
+        try {
+
+          if (!(data.hasOwnProperty('sessionKey'))) {
+            throw "data.hasOwnProperty('sessionKey') is false"
+          }
+          if (!(data.hasOwnProperty(host))) {
+            throw "data.hasOwnProperty(host) is false"
+          }
+
           const modifyDomParam = param => {
             let modifier = x => x
             if (param in hostToModifiers[host]) {
               modifier = hostToModifiers[host][param]
             }
             return modifier(
-              document.evaluate(hostToXpaths[host][param], document, null, XPathResult.STRING_TYPE, null).stringValue
+              document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null).stringValue
             )
           }
 
           let params = {
             method: 'track.scrobble',
-            artist: modifyDomParam('artist'),
-            track: modifyDomParam('track'),
+            artist: modifyDomParam(1), // index 1 in /js/options.js
+            track: modifyDomParam(0), // index 0 in /js/options.js
             timestamp: Math.floor(Date.now() / 1000),
-            album: modifyDomParam('album'),
+            album: modifyDomParam(2), // index 2 in /js/options.js
             api_key: lastfmApiKey,
             sk: data['sessionKey'],
           }
           console.log(params['artist'], '/', params['track'], '/', params['album'])
 
-          postApiThenSetIcon(params)
+          await postApiThenValidateXml(params)
 
           params['method'] = 'track.updateNowPlaying'
-          postApiThenSetIcon(params)
+          await postApiThenValidateXml(params)
 
+          browser.runtime.sendMessage('/icons/icon-ok.svg')
+
+        } catch (error) {
+          console.error(error)
+          browser.runtime.sendMessage('/icons/icon-error.svg')
         }
+
       })
 
-      .catch(console.error)
-
   })
+
 }
 
 const lastfmApiKey = '8bab7f1fca7973b6d6d2f6b60164eaa4'
@@ -114,13 +116,11 @@ const postApi = params => {
  * ignoredCode is null if xmlDoc has an error. If ignoredCode is "0", then the request is not ignored.
  */
 const validateXmlDoc = text => {
-  console.log(text)
   const xmlDoc = new DOMParser().parseFromString(text, 'text/xml')
   const lfm = xmlDoc.evaluate('/lfm', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
 
   if (lfm.getAttribute('status') !== 'ok') {
     const error = xmlDoc.evaluate('/lfm/error', xmlDoc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
-    console.log(error)
 
     return [
       error.getAttribute('code'),

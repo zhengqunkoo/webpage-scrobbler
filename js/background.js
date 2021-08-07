@@ -1,3 +1,13 @@
+const defaultSettings = {
+  'www.midomi.com': [
+    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[1]', // track
+    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[2]/span', // artist
+    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[3]/span', // album
+  ],
+}
+
+browser.storage.sync.set(defaultSettings)
+
 browser.browserAction.onClicked.addListener(tab => {
 
   browser.storage.sync.get()
@@ -9,7 +19,7 @@ browser.browserAction.onClicked.addListener(tab => {
         browser.tabs.sendMessage(tab.id, new URL(tab.url).host)
 
       } else {
-        browser.tabs.create({url: browser.runtime.getURL('html/options.html')})
+        browser.tabs.create({url: browser.runtime.getURL('html/login.html')})
           .then(optionsTab => {
             browser.tabs.onRemoved.addListener(tabId => {
               if (tabId === optionsTab.id) {

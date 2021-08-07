@@ -3,24 +3,22 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="/css/options.css"/>
+    <link rel="stylesheet" href="/css/form.css"/>
   </head>
 
   <body>
     <div class="options">
-      <div class="title">login</div>
+      <div class="title">settings</div>
 
-      <form>
-        <label>username <input type="text" id="username" required/></label>
-        <label>password <input type="password" id="password" required/></label>
-        <label> <input type="submit" value="login"/></label>
-      </form>
-
-      <div id="response"></div>
+      <div id="container-settings">
+        <table id="table">
+        </table>
+        <input type="submit" id="tbodyInsertRow" value="+"/>
+      </div>
 
       <input type="button" id="help" value="help"/>
     </div>
 
-    <script type="module" src="/js/options.js"></script>
+    <script src="/js/options.js"></script>
   </body>
 </html>
