@@ -1,7 +1,9 @@
 let hostToModifiers = {
-  'www.midomi.com': {
-    album: s => s.split(' • ')[0],
-  },
+  'www.midomi.com': [
+    s => s,
+    s => s,
+    s => s.split(' • ')[0],
+  ],
 }
 
 const postApiThenValidateXml = params => {
