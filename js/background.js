@@ -1,8 +1,11 @@
 const defaultSettings = {
   'www.midomi.com': [
-    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[1]', // track
-    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[2]/span', // artist
-    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[3]/span', // album
+    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[1]', // track XPath
+    '', // track separator
+    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[2]/span', // artist XPath
+    '', // artist separator
+    '/html/body/div[1]/div[2]/div/div[1]/div[2]/div/div[2]/p[3]/span', // album XPath
+    ' • ', // album separator
   ],
 }
 

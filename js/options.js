@@ -1,19 +1,26 @@
 const heads = [
   'host',
-  'track XPath',
-  'artist XPath',
-  'album XPath'
+  'track XPath / track separator',
+  'artist XPath / artist separator',
+  'album XPath / album separator',
 ]
 
 const tbodyInsertRow = (tbody, e) => { // e: [String: [String]]
   const row = tbody.insertRow()
-  for (const value of [e[0]].concat(e[1]).values()) {
+  const createChild = (value) => {
     const input = document.createElement('input')
     input.value = value
     input.setAttribute('type', 'text')
     input.addEventListener('focus', input.select)
     input.addEventListener('keyup', setSettings)
-    row.insertCell().appendChild(input)
+    return input
+  }
+
+  row.insertCell().appendChild(createChild(e[0]))
+  for (let j = 0; j < e[1].length; j += 2) {
+    const cell = row.insertCell()
+    cell.appendChild(createChild(e[1][j]))
+    cell.appendChild(createChild(e[1][j+1]))
   }
 }
 
@@ -24,7 +31,8 @@ const setSettings = () => {
     const row = rows[i]
     const values = []
     for (let j = 1; j < row.children.length; j++) {
-      values.push(row.children[j].firstChild.value)
+      values.push(row.children[j].children[0].value)
+      values.push(row.children[j].children[1].value)
     }
     data[row.children[0].firstChild.value] = values
   }
@@ -67,7 +75,18 @@ const init = () => {
     'click',
     () => {
       const tbody = document.getElementById('table').tBodies[0]
-      tbodyInsertRow(tbody, ['', ['','','']])
+      tbodyInsertRow(
+        tbody,
+        ['', [
+          '/', // track XPath
+          '', // track separator
+          '/', // artist XPath
+          '', // artist separator
+          '/', // album XPath
+          '', // album separator
+          ],
+        ]
+      )
       tbody.rows[tbody.rows.length - 1].firstChild.firstChild.focus()
     }
   )

@@ -1,11 +1,3 @@
-let hostToModifiers = {
-  'www.midomi.com': [
-    s => s,
-    s => s,
-    s => s.split(' • ')[0],
-  ],
-}
-
 const postApiThenValidateXml = params => {
   return postApi(params)
     .then(async text => {
@@ -40,21 +32,18 @@ const init = () => {
           }
 
           const modifyDomParam = param => {
-            let modifier = x => x
-            if (param in hostToModifiers[host]) {
-              modifier = hostToModifiers[host][param]
-            }
-            return modifier(
-              document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null).stringValue
-            )
+            param = 2 * param
+            return (
+                document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null).stringValue
+              ).split(data[host][param + 1])
           }
 
           let params = {
             method: 'track.scrobble',
-            artist: modifyDomParam(1), // index 1 in /js/options.js
+            artist: modifyDomParam(1), // index 2 in /js/options.js
             track: modifyDomParam(0), // index 0 in /js/options.js
             timestamp: Math.floor(Date.now() / 1000),
-            album: modifyDomParam(2), // index 2 in /js/options.js
+            album: modifyDomParam(2), // index 4 in /js/options.js
             api_key: lastfmApiKey,
             sk: data['sessionKey'],
           }
