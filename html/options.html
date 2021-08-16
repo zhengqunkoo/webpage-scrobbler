@@ -7,16 +7,32 @@
   </head>
 
   <body>
-    <div class="options">
-      <div class="title">settings</div>
 
+    <div class="options">
+
+      <div class="title">settings</div>
       <div id="container-settings">
         <table id="table">
         </table>
         <input type="submit" id="tbodyInsertRow" value="+"/>
       </div>
+      <br/>
+
+      <div class="title">advanced</div>
+      <div id="container-settings-advanced">
+        Export settings to local disk
+        <br/>
+        <button id="fileExport">Export settings</button>
+        <br/>
+
+        Import settings from local disk
+        <br/>
+        <input type="file" id="fileImport"/>
+      </div>
+      <br/>
 
       <input type="button" id="help" value="help"/>
+
     </div>
 
     <script src="/js/options.js"></script>

@@ -72,6 +72,28 @@ const init = () => {
     }
   )
 
+  document.getElementById('fileImport').addEventListener(
+    'change',
+    () => {
+      document.getElementById('fileImport').files[0].text()
+        .then(text => getSettings(JSON.parse(text)))
+      setSettings()
+    }
+  )
+
+  document.getElementById('fileExport').addEventListener(
+    'click',
+    () => {
+      browser.storage.sync.get()
+        .then(data => {
+          const a = document.createElement('a')
+          a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type: 'application/json'})),
+          a.download = 'webpage-scrobbler.json'
+          a.click()
+        })
+    }
+  )
+
   document.getElementById('help').addEventListener(
     'click',
     () => browser.tabs.create({url: browser.runtime.getURL('/html/installed.html')})
