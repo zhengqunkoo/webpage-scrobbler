@@ -28,14 +28,20 @@ const init = () => {
             throw "data.hasOwnProperty('sessionKey') is false"
           }
           if (!(data.hasOwnProperty(host))) {
-            throw "data.hasOwnProperty(host) is false"
+            throw `data.hasOwnProperty(host) is false with values: ${host}`
           }
 
           const modifyDomParam = param => {
             param = 2 * param
-            return (
-                document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null).stringValue
-              ).split(data[host][param + 1])
+            const ret =
+              document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null)
+                .stringValue
+                .split(data[host][param + 1])
+
+            if (ret === undefined) {
+              throw `document.evaluate(...).stringValue.split(...) undefined with values: ${host}, ${param}, ${data[host]}`
+            }
+            return ret
           }
 
           let params = {
