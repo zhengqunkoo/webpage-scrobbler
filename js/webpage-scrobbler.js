@@ -33,10 +33,25 @@ const init = () => {
 
           const modifyDomParam = param => {
             param = 2 * param
+
+            /*
+             * According to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split,
+             * If separator contains multiple characters, that entire character sequence must be found in order to split.
+             * If separator is omitted or does not occur in str, the returned array contains one element consisting of the entire string.
+             *
+             * Assume if user configures separator to be '', then the intention is to not split str.
+             * Assume '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' does not occur in str.
+             * The intended effect is: `str.split()[0] === str`.
+             */
+            let separator = data[host][param + 1]
+            if (separator === '') {
+              separator = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            }
+
             const ret =
               document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null)
                 .stringValue
-                .split(data[host][param + 1])
+                .split(separator)
                 [0]
 
             if (ret === undefined) {
