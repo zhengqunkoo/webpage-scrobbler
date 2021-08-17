@@ -37,6 +37,7 @@ const init = () => {
               document.evaluate(data[host][param], document, null, XPathResult.STRING_TYPE, null)
                 .stringValue
                 .split(data[host][param + 1])
+                [0]
 
             if (ret === undefined) {
               throw `document.evaluate(...).stringValue.split(...) undefined with values: ${host}, ${param}, ${data[host]}`

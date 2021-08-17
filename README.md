@@ -32,5 +32,5 @@ Currently, the only host supported is "www.midomi.com".
    If the logo flashes dark, check your browser's console for more details.
 
 # TODO
-- Allow user to configure track/artist/album modifiers of other webpages.
+- Allow user to configure track/artist/album separand index.
 - Screenshots
